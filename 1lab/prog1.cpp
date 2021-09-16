@@ -7,7 +7,7 @@
 namespace prog1{
 	constexpr int BUF_SIZE = 80;
 
-	char isWrongMatrix(Matrix matrix){
+	char isWrongMatrix(const Matrix& matrix){
 		if(matrix.m == -1){
 			return 1;
 		}
@@ -127,7 +127,7 @@ namespace prog1{
 		return matrix;
 	}
 
-	void output1(Matrix matrix) {
+	void output1(const Matrix& matrix) {
 		std::cout << matrix.raw_indexes[matrix.m] << std::endl;
 		for (int i = 0; i < matrix.raw_indexes[matrix.m]; i++) {
 			std::cout << matrix.numbers[i] << ", ";
@@ -272,7 +272,7 @@ namespace prog1{
 		return matrix;
 	}
 
-	void output(Matrix matrix){
+	void output(const Matrix& matrix){
 		if(matrix.m == -1){
 			std::cout << "Wrong matrix";
 			return;
@@ -424,7 +424,7 @@ namespace prog1{
 		return new_matrix;
 	}
 
-	void remove(Matrix matrix){
+	void remove(Matrix& matrix){
 		delete[] matrix.numbers;
 		delete[] matrix.column_indexes;
 		delete[] matrix.raw_indexes;

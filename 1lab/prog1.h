@@ -17,11 +17,11 @@ namespace prog1{
 	}
 
 	
-	char isWrongMatrix(Matrix matrix);
+	char isWrongMatrix(const Matrix& matrix);
 	Matrix read();
-	void output(Matrix matrix);
+	void output(const Matrix& matrix);
 	Matrix read();
-	void output(Matrix matrix);
-	Matrix change(Matrix matrix);
-	void remove(Matrix matrix);
+	void output(const Matrix& matrix);
+	Matrix change(const Matrix& matrix);
+	void remove(Matrix& matrix);
 }

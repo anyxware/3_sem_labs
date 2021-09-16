@@ -17,28 +17,6 @@ int main(int argc, char const *argv[])
 		return 1;
 	}
 
-	/*
-	cout << matrix.m << endl;
-
-	for(int i = 0; i < matrix.raw_indexes[matrix.m]; i++){
-		cout << matrix.numbers[i] << " ";
-	}
-
-	cout << endl;
-
-	for(int i = 0; i < matrix.raw_indexes[matrix.m]; i++){
-		cout << matrix.column_indexes[i] << " ";
-	}
-
-	cout << endl;
-
-	for(int i = 0; i < matrix.m + 1; i++){
-		cout << matrix.raw_indexes[i] << " ";
-	}
-
-	cout << endl;
-	*/
-
 	output(matrix);
 
 	Matrix new_matrix = change(matrix);
