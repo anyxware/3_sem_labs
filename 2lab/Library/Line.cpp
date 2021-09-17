@@ -7,6 +7,7 @@
 
 Line::Line(double input_radius) {
 	if (input_radius < 0) {
+		radius = 1;
 		throw std::exception("invalid radius");
 	}
 	else radius = input_radius;
