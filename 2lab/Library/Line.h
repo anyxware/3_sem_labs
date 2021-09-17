@@ -1,3 +1,5 @@
+#ifndef LINE_H
+#define LINE_H
 /*
 * Вариант 7. Кардиоида
 Разработать класс, определяющий кривую – кардиоиду.
@@ -33,7 +35,7 @@ public:
 	double length(double phi1, double phi2) const;
 };
 
-
+#endif // LINE_H
 
 
 
