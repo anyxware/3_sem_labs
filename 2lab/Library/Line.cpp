@@ -51,10 +51,10 @@ double Line::curvature(double phi) const {
 }
 
 double Line::length(double phi1, double phi2) const {
-	return 4.0 * radius * integral(phi1, phi2, foo1);
+	return 4.0 * radius * integral(phi1, phi2, lengthCounter);
 
 }
 
 double Line::area(double phi1, double phi2) const {
-	return 2.0 * radius * radius * integral(phi1, phi2, foo2);
+	return 2.0 * radius * radius * integral(phi1, phi2, areaCounter);
 }

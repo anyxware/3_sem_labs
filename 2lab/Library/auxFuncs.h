@@ -1,8 +1,8 @@
 #include <iostream>
 #include <limits>
 
-double foo1(double phi);
-double foo2(double phi);
+double lengthCounter(double phi);
+double areaCounter(double phi);
 
 double integral(double phi1, double phi2, double (*foo)(double phi));
 

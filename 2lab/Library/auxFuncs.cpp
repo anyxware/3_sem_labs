@@ -1,11 +1,11 @@
 #include <cmath>
 #include "auxFuncs.h"
 
-double foo1(double phi) {
+double lengthCounter(double phi) {
 	return sin(phi / 2);
 }
 
-double foo2(double phi) {
+double areaCounter(double phi) {
 	return (1 - cos(phi)) * (1 - cos(phi));
 }
 
