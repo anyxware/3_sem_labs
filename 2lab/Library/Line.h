@@ -13,7 +13,7 @@
 Разработать диалоговую программу для тестирования класса.
 */
 
-typedef struct {
+typedef struct Coords{
 	double x;
 	double y;
 } Coords;
@@ -26,10 +26,10 @@ public:
 	Line(double input_radius = 1);
 
 	double get_radius() const { return radius; }
-	bool set_radius(double input_radius = 1);
+	void set_radius(double input_radius = 1);
 
 	double distance(double phi) const;
-	Coords* farthest_points() const;
+	void farthest_points(Coords& coords1, Coords& coords2) const;
 	double curvature(double phi) const;
 	double area(double phi1, double phi2) const;
 	double length(double phi1, double phi2) const;

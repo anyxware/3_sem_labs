@@ -51,15 +51,11 @@ bool Menu::case_2() {
 }
 
 bool Menu::case_3() {
-	Coords* coords_array = line.farthest_points();
+	Coords coords1, coords2;
+	line.farthest_points(coords1, coords2);
 
-	if (coords_array == nullptr) {
-		return false;
-	}
-
-	std::cout << coords_array[0].x << ":" << coords_array[0].y << std::endl;
-	std::cout << coords_array[1].x << ":" << coords_array[1].y << std::endl;
-	delete[] coords_array;
+	std::cout << coords1.x << ":" << coords1.y << std::endl;
+	std::cout << coords2.x << ":" << coords2.y << std::endl;
 
 	return true;
 }

@@ -4,7 +4,6 @@
 int main() {
 	Menu menu;
 	int answer;
-
 	do {
 		menu.output();
 		answer = menu.get_answer();
