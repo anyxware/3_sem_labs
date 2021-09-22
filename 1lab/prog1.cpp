@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cstring>
-#include <bits/stdc++.h>
 #include <limits>
 #include "prog1.h"
 
@@ -14,7 +13,143 @@ namespace prog1{
 		return 0;
 	}
 
-	Matrix read1() {
+	Matrix new_read() {
+		Matrix matrix;
+		Matrix wrong_matrix;
+		wrong_matrix.m = -1;
+		const char* pr = "";
+		do {
+			std::cout << pr << std::endl;
+			std::cout << "Enter number of lines: --> ";
+			pr = "You are wrong; repeat please!";
+			if (getNum(matrix.m) < 0)
+				return wrong_matrix;
+		} while (matrix.m < 1);
+
+		int k;
+		pr = "";
+		do {
+			std::cout << pr << std::endl;
+			std::cout << "Enter number of columns: --> ";
+			pr = "You are wrong; repeat please!";
+			if (getNum(k) < 0)
+				return wrong_matrix;
+		} while (k < 1);
+
+		int n;
+		pr = "";
+		do {
+			std::cout << pr << std::endl;
+			std::cout << "Enter number of non-zero items: --> ";
+			pr = "You are wrong; repeat please!";
+			if (getNum(n) < 0)
+				return wrong_matrix;
+		} while (n < 1);
+
+		try {
+			matrix.numbers = new int[n];
+		}
+		catch (std::bad_alloc& ba) {
+			std::cout << ba.what() << std::endl;
+			return wrong_matrix;
+		}
+
+		try {
+			matrix.column_indexes = new int[n];
+		}
+		catch (std::bad_alloc& ba) {
+			std::cout << ba.what() << std::endl;
+			delete[] matrix.numbers;
+			return wrong_matrix;
+		}
+
+		try {
+			matrix.raw_indexes = new int[matrix.m + 1];
+		}
+		catch (std::bad_alloc& ba) {
+			std::cout << ba.what() << std::endl;
+			delete[] matrix.numbers;
+			delete[] matrix.column_indexes;
+			return wrong_matrix;
+		}
+
+
+		for (int i = 0; i < matrix.m + 1; i++) matrix.raw_indexes[i] = 0;
+
+		try {
+			matrix.sizes = new int[matrix.m];
+		}
+		catch (std::bad_alloc& ba) {
+			std::cout << ba.what() << std::endl;
+			delete[] matrix.numbers;
+			delete[] matrix.column_indexes;
+			delete[] matrix.raw_indexes;
+			return wrong_matrix;
+		}
+
+		for (int i = 0; i < matrix.m; i++) {
+			matrix.sizes[i] = k;
+		}
+
+		int token, col_ind = -1, cur_col_ind, raw_ind = -1, cur_raw_ind;
+		std::cout << "Enter items from left to right and from up to down\n";
+		for (int i = 0; i < n; i++) {
+			const char* er = "";
+			do {
+				std::cout << er << std::endl;
+				er = "zero item";
+				std::cout << "Enter number: ";
+				if (getNum(token) < 0) {
+					remove(matrix);
+					return wrong_matrix;
+				}
+			} while (token == 0);
+			er = "";
+			cur_col_ind = col_ind;
+			do {
+				std::cout << er << std::endl;
+				er = "bad index";
+				std::cout << "Enter horizontal index: ";
+				if (getNum(col_ind) < 0) {
+					remove(matrix);
+					return wrong_matrix;
+				}
+			} while (col_ind < 0 || col_ind >= k);
+			cur_raw_ind = raw_ind;
+			er = "";
+			do {
+				std::cout << er << std::endl;
+				er = "bad index";
+				std::cout << "Enter vertical index: ";
+				if (getNum(raw_ind) < 0) {
+					remove(matrix);
+					return wrong_matrix;
+				}
+			} while (raw_ind < 0 || raw_ind >= matrix.m);
+
+			if (cur_col_ind != -1 && cur_raw_ind != -1 && (raw_ind * k + col_ind) <= (cur_raw_ind * k + cur_col_ind)) {
+				std::cout << "bad position";
+				remove(matrix);
+				return wrong_matrix;
+			}
+
+			matrix.numbers[i] = token;
+			matrix.column_indexes[i] = col_ind;
+			for (int i = raw_ind + 1; i < matrix.m + 1; i++) matrix.raw_indexes[i]++;
+
+		}
+		return matrix;
+	}
+
+	void new_output(Matrix matrix) {
+		int raw_counter = -1;
+		for (int i = 0; i < matrix.raw_indexes[matrix.m]; i++) {
+			if (i == matrix.raw_indexes[raw_counter + 1]) raw_counter++;
+			std::cout << matrix.numbers[i] << " (" << matrix.column_indexes[i] << ", " << raw_counter << "); " << std::endl;
+		}
+	}
+
+	void Matrix read1() {
 		Matrix matrix;
 		Matrix wrong_matrix;
 		wrong_matrix.m = -1;
@@ -146,7 +281,7 @@ namespace prog1{
 		}
 		std::cout << std::endl;
 	}
-
+	
 	Matrix read(){
 		const char* pr = "";
 		Matrix wrong_matrix;
@@ -234,8 +369,10 @@ namespace prog1{
 
 					if(counter == matrix_size){
 						matrix_size += BUF_SIZE;
+						int* numbers_tmp;
+						int* columns_tmp;
 						try {
-							int* numbers_tmp = new int[matrix_size];
+							numbers_tmp = new int[matrix_size];
 						}
 						catch (std::bad_alloc& ba) {
 							std::cout << ba.what() << std::endl;
@@ -243,7 +380,7 @@ namespace prog1{
 							return wrong_matrix;
 						}
 						try {
-							int* columns_tmp = new int[matrix_size];
+							columns_tmp = new int[matrix_size];
 						}
 						catch (std::bad_alloc& ba) {
 							std::cout << ba.what() << std::endl;
@@ -261,8 +398,8 @@ namespace prog1{
 				}
 			}
 
-			std::string overflow;
-			std::getline(cin, overflow);
+			std::cin.clear();
+			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
 			matrix.raw_indexes[i + 1] = counter;
 		}
@@ -333,6 +470,8 @@ namespace prog1{
 
 	Matrix change(const Matrix& matrix){
 		Matrix new_matrix;
+		Matrix wrong_matrix;
+		wrong_matrix.m = -1;
 		try {
 			new_matrix.numbers = new int[BUF_SIZE];
 		}
@@ -372,7 +511,7 @@ namespace prog1{
 			delete[] new_matrix.raw_indexes;
 			return wrong_matrix;
 		}
-		new_matrix_size = BUF_SIZE;
+		int new_matrix_size = BUF_SIZE;
 		
 		int counter = 0;
 		int min_index;
@@ -393,8 +532,10 @@ namespace prog1{
 
 				if(counter == new_matrix_size){
 					new_matrix_size += BUF_SIZE;
+					int* numbers_tmp;
+					int* columns_tmp;
 					try {
-						int* numbers_tmp = new int[matrix_size];
+						numbers_tmp = new int[new_matrix_size];
 					}
 					catch (std::bad_alloc& ba) {
 						std::cout << ba.what() << std::endl;
@@ -402,10 +543,10 @@ namespace prog1{
 						return wrong_matrix;
 					}
 					try {
-						int* columns_tmp = new int[matrix_size];
+						columns_tmp = new int[new_matrix_size];
 					}
-					catch (bad_alloc& ba) {
-						cout << ba.what() << endl;
+					catch (std::bad_alloc& ba) {
+						std::cout << ba.what() << std::endl;
 						delete[] numbers_tmp;
 						remove(new_matrix);
 						return wrong_matrix;
