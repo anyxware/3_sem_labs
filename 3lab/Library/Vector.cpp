@@ -8,7 +8,7 @@
 namespace Static {
 	Vector::Vector(unsigned int size, int initNumber) {
 		if (size > maxSize) {
-			throw std::exception("invalid size");
+			throw std::invalid_argument("Invalid size");
 		}
 		for (int i = 0; i < size; i++) {
 			array[i] = initNumber;
@@ -18,10 +18,10 @@ namespace Static {
 
 	 Vector::Vector(unsigned int size, double* inArray) {
 		if (size > maxSize) {
-			throw std::exception("Invalid size");
+			throw std::invalid_argument("Invalid size");
 		}
 		if (inArray == nullptr) {
-			throw std::exception("Invalid array");
+			throw std::invalid_argument("Invalid array");
 		}
 		for (int i = 0; i < size; i++) {
 			array[i] = inArray[i];
@@ -31,7 +31,7 @@ namespace Static {
 
 	Vector::Vector(const std::initializer_list<int>& list) {
 		if (list.size() > maxSize) {
-			throw std::exception("Invalid size");
+			throw std::invalid_argument("Invalid size");
 		}
 		int i = 0;
 		for (auto &element : list) {
@@ -57,12 +57,12 @@ namespace Static {
 	}
 
 	double& Vector::operator[](unsigned int i) {
-		if (i >= curSize) throw std::exception("Index out of range");
+		if (i >= curSize) throw std::out_of_range("Index out of range");
 		return array[i];
 	}
 
 	const double& Vector::operator[](unsigned int i) const {
-		if (i >= curSize) throw std::exception("Index out of range");
+		if (i >= curSize) throw std::out_of_range("Index out of range");
 		return array[i];
 	}
 
@@ -173,10 +173,7 @@ namespace Static {
 
 namespace Dynamic {
 	Vector::Vector(double initNumber) {
-		array = new(std::nothrow) double[1];
-		if (array == nullptr) {
-			throw std::exception("Bad alloc");
-		}
+		array = new double[1];
 		array[0] = initNumber;
 		curSize = 1;
 	}
@@ -186,10 +183,7 @@ namespace Dynamic {
 			curSize = 0;
 			return;
 		}
-		array = new(std::nothrow) double[size];
-		if (array == nullptr) {
-			throw std::exception("Bad alloc");
-		}
+		array = new double[size];
 		curSize = size;
 		for (int i = 0; i < curSize; i++) array[i] = initNumber;
 	}
@@ -199,10 +193,7 @@ namespace Dynamic {
 			curSize = 0;
 			return;
 		}
-		array = new(std::nothrow) double[size];
-		if (array == nullptr) {
-			throw std::exception("Bad alloc");
-		}
+		array = new double[size];
 		curSize = size;
 		for (int i = 0; i < curSize; i++) array[i] = inArray[i];
 	}
@@ -212,10 +203,7 @@ namespace Dynamic {
 			curSize = 0;
 			return;
 		}
-		array = new(std::nothrow) double[list.size()];
-		if (array == nullptr) {
-			throw std::exception("Bad alloc");
-		}
+		array = new double[list.size()];
 		int i = 0;
 		for (double element : list) {
 			array[i] = element;
@@ -229,10 +217,7 @@ namespace Dynamic {
 			curSize = 0;
 			return;
 		}
-		array = new(std::nothrow) double[vector.curSize];
-		if (array == nullptr) {
-			throw std::exception("Bad alloc");
-		}
+		array = new double[vector.curSize];
 		curSize = vector.curSize;
 		memcpy(array, vector.array, curSize * sizeof(double));
 	}
@@ -296,12 +281,12 @@ namespace Dynamic {
 	}
 
 	double& Vector::operator[](unsigned int i) {
-		if (i >= curSize) throw std::exception("Index out of range");
+		if (i >= curSize) throw std::out_of_range("Index out of range");
 		return array[i];
 	}
 
 	const double& Vector::operator[](unsigned int i) const {
-		if (i >= curSize) throw std::exception("Index out of range");
+		if (i >= curSize) throw std::out_of_range("Index out of range");
 		return array[i];
 	}
 
@@ -309,10 +294,7 @@ namespace Dynamic {
 		Vector new_vector;
 		new_vector.curSize = std::min(v1.curSize, v2.curSize);
 		if (new_vector.curSize == 0) return new_vector;
-		new_vector.array = new(std::nothrow) double[new_vector.curSize];
-		if (new_vector.array == nullptr) {
-			throw std::exception("Bad alloc");
-		}
+		new_vector.array = new double[new_vector.curSize];
 		for (int i = 0; i < new_vector.curSize; i++) {
 			new_vector.array[i] = v1.array[i] + v2.array[i];
 		}
@@ -323,10 +305,7 @@ namespace Dynamic {
 		Vector new_vector;
 		new_vector.curSize = std::min(v1.curSize, v2.curSize);
 		if (new_vector.curSize == 0) return new_vector;
-		new_vector.array = new(std::nothrow) double[new_vector.curSize];
-		if (new_vector.array == nullptr) {
-			throw std::exception("Bad alloc");
-		}
+		new_vector.array = new double[new_vector.curSize];
 		for (int i = 0; i < new_vector.curSize; i++) {
 			new_vector.array[i] = v1.array[i] - v2.array[i];
 		}
@@ -349,10 +328,7 @@ namespace Dynamic {
 			curSize = vector.curSize;
 			return *this;
 		}
-		array = new(std::nothrow) double[curSize];
-		if (array == nullptr) {
-			throw std::exception("Bad alloc");
-		}
+		array = new double[curSize];
 		curSize = vector.curSize;
 		memcpy(array, vector.array, curSize * sizeof(double));
 		return *this;
