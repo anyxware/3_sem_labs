@@ -389,7 +389,7 @@ namespace Dynamic {
 				return inStream;
 			}
 		}
-		delete[] vector.array;
+		if(vector.curSize > 0) delete[] vector.array;
 		vector.curSize = tmp;
 		vector.array = tmpArray;
 		return inStream;
