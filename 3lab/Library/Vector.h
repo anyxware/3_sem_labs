@@ -25,8 +25,8 @@ namespace Static {
 		unsigned int getCurSize() const { return curSize; }
 		double& operator[](unsigned int i);
 		const double& operator[](unsigned  int i) const;
-		bool getArray(std::ostream& outStream) const ;
-		bool setArray(std::istream& inStream);
+		bool getArray(std::ostream& outStream = std::cout) const ;
+		bool setArray(std::istream& inStream = std::cin);
 
 		void add(const Vector& vector, Vector& new_vector) const ;
 		void sub(const Vector& vector, Vector& new_vector) const ;
@@ -60,8 +60,8 @@ namespace Dynamic {
 		bool getItem(unsigned int num, double& val) const ;
 		bool setItem(unsigned int num, double val);
 		unsigned int getCurSize() const { return curSize; }
-		bool getArray(std::ostream& outStream) const ;
-		bool setArray(std::istream& inStream);
+		bool getArray(std::ostream& outStream = std::cout) const ;
+		bool setArray(std::istream& inStream = std::cin);
 
 		double& operator[](unsigned int i);
 		const double& operator[](unsigned int i) const;
