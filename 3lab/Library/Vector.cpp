@@ -371,7 +371,7 @@ namespace Dynamic {
 	std::istream& operator>>(std::istream& inStream, Vector& vector) {
 		unsigned int tmp = 0;
 		if (!getNum(tmp, inStream)) {
-			std::ios::failbit;
+			inStream.setstate(std::ios::failbit);
 			return inStream;
 		}
 		if (tmp == 0) {
@@ -380,7 +380,7 @@ namespace Dynamic {
 		}
 		double* tmpArray = new(std::nothrow) double[tmp];
 		if (tmpArray == nullptr) { 
-			std::ios::failbit;
+			inStream.setstate(std::ios::failbit);
 			return inStream;
 		}
 		for (int i = 0; i < tmp; i++) {
