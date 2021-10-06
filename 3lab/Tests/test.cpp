@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "../Library/Vector.h"
+#include <sstream>
 
 constexpr double err = 0.000001;
 
@@ -28,7 +29,7 @@ namespace Static {
 			EXPECT_NEAR(v5[i], arr5[i], err);
 		}
 		EXPECT_THROW({
-			Vector v6(v5.getMaxSize() + 1, 0);
+			Vector v6(v5.getMaxSize() + 1, 0.0);
 			}, std::exception);
 	}
 
@@ -48,8 +49,31 @@ namespace Static {
 		}
 		v1[3] = 5;
 		EXPECT_NEAR(v1[3], 5, err);
-		v1.setArray(std::cin);
-		v1.getArray(std::cout);
+		
+		std::string str = "3 1.0 3.4 5.6\n";
+		std::istringstream istr(str);
+		std::ostringstream ostr;
+		double arr1[] = { 1.0,3.4,5.6 };
+		v1.setArray(istr);
+		EXPECT_EQ(v1.getCurSize(), 3);
+		for (int i = 0; i < 3; i++) {
+			EXPECT_NEAR(v1[i], arr1[i], err);
+		}
+		v1.getArray(ostr);
+		std::string str1 = ostr.str();
+		std::string expectStr = "3 1 3.4 5.6 \n";
+		EXPECT_EQ(expectStr, str1);
+
+		Vector v2 = { 1,2,3,4,5 };
+		double arr2[] = { 1,2,3,4,5 };
+		std::string str2 = "3 1.0 q 3.4 5.6";
+		std::istringstream istr2(str2);
+		v2.setArray(istr2);
+		EXPECT_TRUE(istr2.fail());
+		EXPECT_EQ(v2.getCurSize(), 5);
+		for (int i = 0; i < 5; i++) {
+			EXPECT_NEAR(v2[i], arr2[i], err);
+		}
 	}
 	TEST(Methods_S, Math) {
 		Vector v1 = { 1,2,3,6 };
@@ -84,7 +108,7 @@ namespace Static {
 		v1.append(99);
 		EXPECT_EQ(v1.getCurSize(), 5);
 		EXPECT_NEAR(v1[4], 99, err);
-		Vector v2(v1.getMaxSize(), 0);
+		Vector v2(v1.getMaxSize(), 0.);
 		EXPECT_FALSE(v2.append(5));
 	}
 	TEST(Operators_S, Math) {
@@ -130,7 +154,7 @@ namespace Dynamic {
 			EXPECT_NEAR(v5[i], array[i], err);
 		}
 		EXPECT_THROW({
-			Vector v6(-1, 0);
+			Vector v6(-1, 0.);
 			}, std::exception);
 	}
 	TEST(Constructor_D, CopyConstructor) {
@@ -156,8 +180,31 @@ namespace Dynamic {
 		}
 		v1[3] = 5;
 		EXPECT_NEAR(v1[3], 5, err);
-		v1.setArray(std::cin);
-		v1.getArray(std::cout);
+
+		std::string str = "3 1.0 3.4 5.6\n";
+		std::istringstream istr(str);
+		std::ostringstream ostr;
+		double arr1[] = { 1.0,3.4,5.6 };
+		v1.setArray(istr);
+		EXPECT_EQ(v1.getCurSize(), 3);
+		for (int i = 0; i < 3; i++) {
+			EXPECT_NEAR(v1[i], arr1[i], err);
+		}
+		v1.getArray(ostr);
+		std::string str1 = ostr.str();
+		std::string expectStr = "3 1 3.4 5.6 \n";
+		EXPECT_EQ(expectStr, str1);
+
+		Vector v2 = { 1,2,3,4,5 };
+		double arr2[] = { 1,2,3,4,5 };
+		std::string str2 = "3 1.0 q 3.4 5.6";
+		std::istringstream istr2(str2);
+		v2.setArray(istr2);
+		EXPECT_TRUE(istr2.fail());
+		EXPECT_EQ(v2.getCurSize(), 5);
+		for (int i = 0; i < 5; i++) {
+			EXPECT_NEAR(v2[i], arr2[i], err);
+		}
 	}
 	TEST(Methods_D, OtherMethods) {
 		Vector v1 = { 1,4,-88,0 };
@@ -204,8 +251,31 @@ namespace Dynamic {
 	}
 	TEST(Operators_D, IO) {
 		Vector v1;
-		std::cin >> v1;
-		std::cout << v1;
+		std::string str = "3 1.0 3.4 5.6\n";
+		std::istringstream istr(str);
+		std::ostringstream ostr;
+		double arr[] = { 1.0,3.4,5.6 };
+		istr >> v1;
+		EXPECT_EQ(v1.getCurSize(), 3);
+		for (int i = 0; i < 3; i++) {
+			EXPECT_NEAR(v1[i], arr[i], err);
+		}
+		ostr << v1;
+		std::string str1 = ostr.str();
+		std::string expectStr = "3 1 3.4 5.6 \n";
+		EXPECT_EQ(expectStr, str1);
+	}
+	TEST(Operators_D, IO_Fail) {
+		Vector v1 = { 1,2,3,4,5 };
+		double arr[] = { 1,2,3,4,5 };
+		std::string str = "3 1.0 q 3.4 5.6";
+		std::istringstream istr(str);
+		istr >> v1; 
+		EXPECT_TRUE(istr.fail());
+		EXPECT_EQ(v1.getCurSize(), 5);
+		for (int i = 0; i < 5; i++) {
+			EXPECT_NEAR(v1[i], arr[i], err);
+		}
 	}
 	TEST(Cycle, Cycle) {
 		Vector vec = { 1,1,1,1,1 };

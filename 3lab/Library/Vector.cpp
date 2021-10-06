@@ -6,7 +6,7 @@
 #include "auxFuncs.h"
 
 namespace Static {
-	Vector::Vector(unsigned int size, int initNumber) {
+	Vector::Vector(unsigned int size, double initNumber) {
 		if (size > maxSize) {
 			throw std::invalid_argument("Invalid size");
 		}
@@ -16,7 +16,7 @@ namespace Static {
 		curSize = size;
 	}
 
-	 Vector::Vector(unsigned int size, double* inArray) {
+	 Vector::Vector(unsigned int size, const double* inArray) {
 		if (size > maxSize) {
 			throw std::invalid_argument("Invalid size");
 		}
@@ -34,7 +34,7 @@ namespace Static {
 			throw std::invalid_argument("Invalid size");
 		}
 		int i = 0;
-		for (auto &element : list) {
+		for (double element : list) {
 			array[i++] = element;
 		}
 		curSize = list.size();
@@ -178,7 +178,7 @@ namespace Dynamic {
 		curSize = 1;
 	}
 
-	Vector::Vector(unsigned int size, int initNumber) {
+	Vector::Vector(unsigned int size, double initNumber) {
 		if (size == 0) {
 			curSize = 0;
 			return;
@@ -188,7 +188,7 @@ namespace Dynamic {
 		for (int i = 0; i < curSize; i++) array[i] = initNumber;
 	}
 
-	Vector::Vector(unsigned int size, double* inArray) {
+	Vector::Vector(unsigned int size,  const double* inArray) {
 		if (size == 0) {
 			curSize = 0;
 			return;
@@ -269,7 +269,7 @@ namespace Dynamic {
 		double* tmpArray = new(std::nothrow) double[tmp];
 		if (tmpArray == nullptr) return false;
 		for (int i = 0; i < tmp; i++) {
-			if (getNum(tmpArray[i], inStream) < 0) {
+			if (!getNum(tmpArray[i], inStream)) {
 				delete[] tmpArray;
 				return false;
 			}
@@ -323,13 +323,13 @@ namespace Dynamic {
 
 	Vector& Vector::operator=(const Vector& vector) {
 		if (&vector == this) return *this;
+		double* tmpArray = new double[vector.curSize]; //
 		if (curSize > 0) delete[] array;
 		if (vector.curSize == 0) {
 			curSize = vector.curSize;
 			return *this;
 		}
-		array = new double[curSize];
-		curSize = vector.curSize;
+		array = tmpArray; //
 		memcpy(array, vector.array, curSize * sizeof(double));
 		return *this;
 	}

@@ -15,8 +15,8 @@ namespace Static {
 	public:
 		Vector() : curSize(0) {};
 		Vector(double initNumber) : curSize(1) { array[0] = initNumber; };
-		Vector(unsigned int size, int initNumber);
-		Vector(unsigned int size, double* inArray);
+		Vector(unsigned int size, double initNumber); //Vector(1, 0);
+		Vector(unsigned int size, const double* inArray);
 		Vector(const std::initializer_list<int>& list);
 
 		bool getItem(unsigned int num, double& val) const;
@@ -50,8 +50,8 @@ namespace Dynamic {
 	public:
 		Vector() : curSize(0) {};
 		Vector (double initNumber);
-		Vector(unsigned int size, int initNumber);
-		Vector(unsigned int size, double* inArray);
+		Vector(unsigned int size, double initNumber);
+		Vector(unsigned int size, const double* inArray);
 		Vector(const std::initializer_list<int>& list);
 		Vector(const Vector& vector);
 		Vector(Vector&& vector) noexcept ;
