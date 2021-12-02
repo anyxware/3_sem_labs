@@ -9,6 +9,8 @@
 #include "BaseStructs.h"
 #include "DiskIO.h"
 
+class Editor;
+
 class FileSystem
 {
 	friend class Entry;
@@ -39,7 +41,7 @@ protected:
 	void createEmptyFS();
 	void readFS();
 	void writeFS();
-	void pwd(size_t parrentAddress);
+	void pwd(size_t parrentAddress, std::string& out);
 	void recursivelyRemove(size_t fileAddress);
 public:
 	FileSystem() = default;
@@ -55,26 +57,22 @@ public:
 	bool groupadd(const std::string& groupName);
 	bool usermod(const std::string& userName, const std::string& groupName);
 
-	void pwd();
+	void pwd(std::string& out);
 	bool cd(const std::string& path, size_t address = 0);
 	bool cd1(const std::string& path, size_t address = 0);
 	bool mkdir(const std::string& path);
-	bool list(const std::string& path = ".");
+	bool list(std::string& out, const std::string& path = ".");
 	bool touch(const std::string& path);
 	bool rm(const std::string& path);
 	bool mv(const std::string& path1, const std::string& path2);
-	bool cp(const std::string& path1, const std::string& path2);
+	Editor open(const std::string& path);
+	//bool cp(const std::string& path1, const std::string& path2);
 	//void cat(const std::string& name);
 	// testing
 	bool read(const std::string& name, size_t size = -1, size_t position = 0);
 	bool write(const std::string& name, const std::string& text);
-	void chown();  
-	//text editor
+	void chown(); 
 	void chmod();
-
-
-
-
 
 	//testing
 

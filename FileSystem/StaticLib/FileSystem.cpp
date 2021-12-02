@@ -287,11 +287,11 @@ bool FileSystem::usermod(const std::string& userName, const std::string& groupNa
 	return found;
 }
 
-void FileSystem::pwd(size_t parentAddress) {
+void FileSystem::pwd(size_t parentAddress, std::string& out) {
 	if (parentAddress == 0) return;
 	Directory dir(parentAddress, *this);
-	pwd(dir.getParent());
-	dir.name();
+	pwd(dir.getParent(), out);
+	dir.name(out);
 }
 
 void FileSystem::recursivelyRemove(size_t fileAddress)
@@ -310,12 +310,13 @@ void FileSystem::recursivelyRemove(size_t fileAddress)
 	entry.remove();
 }
 
-void FileSystem::pwd()
+void FileSystem::pwd(std::string& out)
 {
 	Directory dir(currentAddress, *this);
-	pwd(dir.getParent());
-	dir.name();
+	pwd(dir.getParent(), out);
+	dir.name(out);
 	std::cout << "\n";
+	out += "\n";
 }
 
 bool FileSystem::cd1(const std::string& path, size_t address)
@@ -470,7 +471,7 @@ bool FileSystem::mkdir(const std::string& path) {
 	return true;
 }
 
-bool FileSystem::list(const std::string& path)
+bool FileSystem::list(std::string& out, const std::string& path)
 {
 	size_t oldCurAddress = currentAddress;
 	if (!cd(path))
@@ -478,7 +479,7 @@ bool FileSystem::list(const std::string& path)
 
 	Directory dir(currentAddress, *this);
 	dir.open();
-	dir.list();
+	dir.list(out);
 	dir.close();
 
 	currentAddress = oldCurAddress;
@@ -640,14 +641,14 @@ bool FileSystem::mv(const std::string& path1, const std::string& path2)
 	return true;
 }
 
-bool FileSystem::cp(const std::string& path1, const std::string& path2)
+Editor FileSystem::open(const std::string& path)
 {
 	std::string newPath;
-	if (path1[path1.size() - 1] == '/') {
-		newPath = path1.substr(0, path1.size() - 1);
+	if (path[path.size() - 1] == '/') {
+		newPath = path.substr(0, path.size() - 1);
 	}
 	else {
-		newPath = path1;
+		newPath = path;
 	}
 
 	size_t found = newPath.find_last_of('/');
@@ -662,38 +663,87 @@ bool FileSystem::cp(const std::string& path1, const std::string& path2)
 		name = newPath.substr(found + 1, newPath.size() - found - 1);
 		newPath = newPath.substr(0, found);
 		if (!cd(newPath))
-			return false;
+			throw std::invalid_argument("Invalid path");
 	}
 
-	Directory srcDir(currentAddress, *this);
+	Directory curDir(currentAddress, *this);
+	curDir.open();
+	size_t fileAddress = curDir.getFileAddress(name);
+	if (fileAddress == 0) {
+		curDir.close();
+		currentAddress = oldCurAddress;
+		throw std::invalid_argument("Invalid name");
+	}
+	
+	Editor editor(fileAddress, *this);
+	Entry& e = editor;
+	if (e.type()) { // if it is directory
+		curDir.close();
+		currentAddress = oldCurAddress;
+		throw std::invalid_argument("Invalid name");
+	}
+
+	curDir.close();
 
 	currentAddress = oldCurAddress;
 
-	if (!cd(path2))
-		return false;
-
-	Directory dstDir(currentAddress, *this);
-
-	currentAddress = oldCurAddress;
-
-	srcDir.open();
-	dstDir.open();
-
-	size_t fileAddress1 = srcDir.getFileAddress(name);
-	size_t fileAddress2 = dstDir.getFileAddress(name);
-
-	if (fileAddress1 == 0 || fileAddress2 != 0)
-		return false;
-
-	// recursively copy
-
-	dstDir.addFile(fileAddress1);
-
-	srcDir.close();
-	dstDir.close();
-
-	return true;
+	return editor;
 }
+
+//bool FileSystem::cp(const std::string& path1, const std::string& path2)
+//{
+//	std::string newPath;
+//	if (path1[path1.size() - 1] == '/') {
+//		newPath = path1.substr(0, path1.size() - 1);
+//	}
+//	else {
+//		newPath = path1;
+//	}
+//
+//	size_t found = newPath.find_last_of('/');
+//
+//	std::string name;
+//	size_t oldCurAddress = currentAddress;
+//
+//	if (found == std::string::npos) {
+//		name = newPath;
+//	}
+//	else {
+//		name = newPath.substr(found + 1, newPath.size() - found - 1);
+//		newPath = newPath.substr(0, found);
+//		if (!cd(newPath))
+//			return false;
+//	}
+//
+//	Directory srcDir(currentAddress, *this);
+//
+//	currentAddress = oldCurAddress;
+//
+//	if (!cd(path2))
+//		return false;
+//
+//	Directory dstDir(currentAddress, *this);
+//
+//	currentAddress = oldCurAddress;
+//
+//	srcDir.open();
+//	dstDir.open();
+//
+//	size_t fileAddress1 = srcDir.getFileAddress(name);
+//	size_t fileAddress2 = dstDir.getFileAddress(name);
+//
+//	if (fileAddress1 == 0 || fileAddress2 != 0)
+//		return false;
+//
+//	// recursively copy
+//
+//	dstDir.addFile(fileAddress1);
+//
+//	srcDir.close();
+//	dstDir.close();
+//
+//	return true;
+//}
 
 bool FileSystem::read(const std::string& name, size_t size, size_t position)
 {

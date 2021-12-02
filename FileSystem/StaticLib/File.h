@@ -38,11 +38,12 @@ private:
 	size_t inodeSize; // content % BLOCK_SZ is equal to inode size
 	FileSystem& fs;
 protected:
-	size_t BLOCK_SZ();
+	size_t BLOCK_SZ = 1024;
 
 	// get-set
 	size_t getMaxSize();
 	size_t getSize() { return inode.size; }
+	void setSize(size_t newSize) { inode.size = newSize; }
 	void incrSize(size_t size) { inode.size += size; }
 	void decrSize(size_t size) { inode.size -= size; }
 	size_t getAddress() { return inode.address; }
@@ -73,8 +74,9 @@ public:
 
 	size_t getParent() { return inode.parentAddress; }
 
-	void name() { 
+	void name(std::string& out) {
 		std::cout << inode.name << (inode.mode[0] ? "/" : "");
+		out += inode.name + (inode.mode[0] ? "/" : "");
 	}
 	bool type() { // true if dir
 		return inode.mode[0];
@@ -86,7 +88,7 @@ public:
 };
 
 class File : public Entry
-{	
+{
 private:
 	size_t position = 0;
 public:
@@ -110,11 +112,30 @@ public:
 	void open(); // from disk
 	bool close(); // to disk // false if file is too big
 
-	void list();
+	void list(std::string& out);
 	size_t getFileAddress(const std::string& fileName); // 0 if it isnt exist
 	void addFile(size_t fileAddress); // return file address to erasing
 	void rmvFile(size_t fileAddress);
 
 	ConstIterator<std::string, size_t> begin();
 	ConstIterator<std::string, size_t> end();
+};
+
+class Editor : public Entry
+{
+	std::string Mytext;
+	size_t deltaSize;
+public:
+	using Entry::Entry;
+
+	void open();
+	void insert(size_t pos, const std::string& data);
+	void insert(size_t pos, char token);
+	void remove(size_t pos, size_t size);
+	const std::string& show();
+	void save();
+	void close();
+	void oldinsert(size_t pos, const char* buffer, size_t size);
+	void oldremove(size_t pos, size_t size);
+	void oldshow(size_t begin = -1, size_t end = -1);
 };

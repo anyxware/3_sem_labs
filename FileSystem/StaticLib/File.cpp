@@ -56,10 +56,7 @@ size_t INode::write(std::fstream& disk) {
 		12 * sizeof(size_t) + name.size() * sizeof(char) + paddingSize;
 }
 
-size_t Entry::BLOCK_SZ()
-{
-	return FileSystem::BLOCK_SZ;
-}
+
 
 size_t Entry::getMaxSize()
 {
@@ -68,7 +65,7 @@ size_t Entry::getMaxSize()
 
 size_t Entry::freeAddress(size_t curSize)
 {
-	const size_t& BS = BLOCK_SZ(); // as an alias
+	const size_t& BS = BLOCK_SZ; // as an alias
 
 	size_t retAddress;
 
@@ -93,7 +90,7 @@ size_t Entry::freeAddress(size_t curSize)
 
 size_t Entry::takeAddress(size_t curSize)
 {
-	const size_t& BS = BLOCK_SZ();
+	const size_t& BS = BLOCK_SZ;
 
 	size_t recAddress = getBlock();
 
@@ -116,7 +113,7 @@ size_t Entry::takeAddress(size_t curSize)
 
 size_t Entry::getAddress(size_t curSize)
 {
-	const size_t& BS = BLOCK_SZ(); // as an alias
+	const size_t& BS = BLOCK_SZ; // as an alias
 
 	size_t retAddress;
 
@@ -177,7 +174,7 @@ Entry::Entry(size_t inodeAddress, FileSystem& fs) : fs(fs)
 
 void Entry::remove()
 {
-	const size_t& BS = BLOCK_SZ();
+	const size_t& BS = BLOCK_SZ;
 	putBlock(inode.address);
 	for (size_t curSize = BS; curSize < inode.size; curSize += BS) {
 		freeAddress(curSize);
@@ -208,7 +205,7 @@ void Directory::open()
 	size_t startAddress = getAddress();
 	size_t dirSize = getSize() + inodeSize;
 
-	const size_t& BLOCK_SIZE = BLOCK_SZ();
+	const size_t& BLOCK_SIZE = BLOCK_SZ;
 
 	int count = 0;
 	for (size_t curSize = inodeSize; curSize < dirSize;) {
@@ -237,7 +234,7 @@ bool Directory::close()
 	size_t startAddress = getAddress();
 	size_t dirSize = getSize() + inodeSize;
 
-	const size_t& BLOCK_SIZE = BLOCK_SZ();
+	const size_t& BLOCK_SIZE = BLOCK_SZ;
 
 	auto it = table.begin();
 
@@ -263,14 +260,16 @@ bool Directory::close()
 	return true;
 }
 
-void Directory::list()
+void Directory::list(std::string& out)
 {
 	if (!opened) return;
 
 	for (auto it : table) {
 		std::cout << it.first << ' ';
+		out += it.first + " ";
 	}
 	std::cout << "\n";
+	out += "\n";
 }
 
 size_t Directory::getFileAddress(const std::string& fileName)
@@ -332,7 +331,7 @@ void File::fread(size_t size)
 	size_t inodeSize = getInodeSize();
 	size_t startAddress = getAddress(inodeSize + position);
 
-	const size_t& BLOCK_SIZE = BLOCK_SZ();
+	const size_t& BLOCK_SIZE = BLOCK_SZ;
 	const size_t BUF_SZ_MAX = 256;
 	size_t buf_sz;
 
@@ -367,7 +366,7 @@ void File::fwrite(const char* buffer, size_t size)
 	size_t fileSize = getSize() + inodeSize;
 	size_t startAddress = getAddress(fileSize);
 
-	const size_t& BLOCK_SIZE = BLOCK_SZ();
+	const size_t& BLOCK_SIZE = BLOCK_SZ;
 	const size_t BUF_SZ_MAX = 256;
 	size_t buf_sz;
 
@@ -403,3 +402,134 @@ void File::fclose()
 	writeInode();
 }
 
+void Editor::oldinsert(size_t pos, const char* buffer, size_t size)
+{
+	size_t fileAddress = getAddress();
+	size_t fileSize = getSize();
+	size_t inodeSize = getInodeSize();
+
+	if (fileSize + size > BLOCK_SZ - inodeSize) {
+		return;
+	}
+
+	size_t buffer_size = fileSize - pos;
+	char* mbuffer = new char[buffer_size];
+
+	write(fileAddress + inodeSize + pos, mbuffer, buffer_size);
+	read(fileAddress + inodeSize + pos + size, mbuffer, buffer_size);
+
+	write(fileAddress + inodeSize + pos, buffer, size);
+
+	incrSize(size);
+	modifyTime();
+}
+
+void Editor::oldremove(size_t pos, size_t size)
+{
+	size_t fileAddress = getAddress();
+	size_t fileSize = getSize();
+	size_t inodeSize = getInodeSize();
+
+	if (fileSize > BLOCK_SZ - inodeSize) {
+		return;
+	}
+
+	size_t buffer_size = fileSize - pos;
+	char* mbuffer = new char[buffer_size];
+
+	read(fileAddress + inodeSize + pos + size, mbuffer, buffer_size);
+	write(fileAddress + inodeSize + pos, mbuffer, buffer_size);
+
+	decrSize(size);
+	modifyTime();
+}
+
+void Editor::open() {
+	size_t fileAddress = getAddress();
+	size_t fileSize = getSize();
+	size_t inodeSize = getInodeSize();
+
+	if (fileSize > BLOCK_SZ - inodeSize) {
+		return;
+	}
+
+	for (size_t pos = fileAddress + inodeSize, count = 0; count < fileSize; ++count, ++pos) {
+		char token;
+		read(pos, &token, sizeof(char));
+		Mytext += token;
+	}
+}
+
+void Editor::insert(size_t pos, const std::string& data)
+{
+	Mytext.insert(pos, data);
+	deltaSize += data.size();
+}
+
+void Editor::insert(size_t pos, char token)
+{
+	Mytext.insert(pos, std::string(1,token));
+}
+
+void Editor::remove(size_t pos, size_t size)
+{
+	Mytext.erase(pos, size);
+}
+
+const std::string& Editor::show()
+{
+	return Mytext;
+}
+
+void Editor::save() {
+
+	setSize(Mytext.size());
+
+	size_t fileAddress = getAddress();
+	size_t fileSize = getSize();
+	size_t inodeSize = getInodeSize();
+
+	if (fileSize > BLOCK_SZ - inodeSize) {
+		return;
+	}
+
+	for (size_t pos = fileAddress + inodeSize, count = 0; count < fileSize; ++count, ++pos) {
+		char token = Mytext[count];
+		write(pos, &token, sizeof(char));
+	}
+
+	modifyTime();
+}
+
+void Editor::close()
+{
+	writeInode();
+}
+
+void Editor::oldshow(size_t begin, size_t end)
+{
+	if (begin == size_t(-1)) {
+		begin = 0;
+	}
+	if (end == size_t(-1)) {
+		end = getSize();
+	}
+
+	size_t fileAddress = getAddress();
+	size_t fileSize = getSize();
+	size_t inodeSize = getInodeSize();
+
+	if (fileSize > BLOCK_SZ - inodeSize) {
+		return;
+	}
+
+	if (begin > fileSize || end - begin > fileSize) {
+		return;
+	}
+
+	for (size_t pos = fileAddress + inodeSize + begin, count = 0; count < end - begin; ++count, ++pos) {
+		char token;
+		read(pos, &token, sizeof(char));
+		std::cout << token;
+	}
+}
