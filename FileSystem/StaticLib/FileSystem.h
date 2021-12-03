@@ -66,13 +66,9 @@ public:
 	bool rm(const std::string& path);
 	bool mv(const std::string& path1, const std::string& path2);
 	Editor open(const std::string& path);
-	//bool cp(const std::string& path1, const std::string& path2);
-	//void cat(const std::string& name);
-	// testing
+	
 	bool read(const std::string& name, size_t size = -1, size_t position = 0);
 	bool write(const std::string& name, const std::string& text);
-	void chown(); 
-	void chmod();
 
 	//testing
 

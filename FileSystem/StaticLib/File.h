@@ -81,10 +81,7 @@ public:
 	bool type() { // true if dir
 		return inode.mode[0];
 	}
-	void changeMode();
-	void changeOwner();
 	void remove();
-	void copy();
 };
 
 class File : public Entry
@@ -110,7 +107,7 @@ public:
 	using Entry::Entry;
 
 	void open(); // from disk
-	bool close(); // to disk // false if file is too big
+	void close(); // to disk // false if file is too big
 
 	void list(std::string& out);
 	size_t getFileAddress(const std::string& fileName); // 0 if it isnt exist

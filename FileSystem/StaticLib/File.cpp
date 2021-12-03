@@ -226,7 +226,7 @@ void Directory::open()
 	table.insert("..", getParent());
 }
 
-bool Directory::close()
+void Directory::close()
 {
 	opened = false;
 
@@ -256,8 +256,6 @@ bool Directory::close()
 	}
 
 	writeInode();
-
-	return true;
 }
 
 void Directory::list(std::string& out)
