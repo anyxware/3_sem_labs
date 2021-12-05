@@ -43,6 +43,10 @@ inline bool mv(FileSystem& fs, cstr str_a, cstr str_b, str out) {
 	return fs.mv(str_a, str_b);
 }
 
+inline bool useradd(FileSystem& fs, cstr str_a, cstr str_b, str out) {
+	return fs.useradd(str_a);
+}
+
 inline bool open(FileSystem& fs, cstr str_a, cstr str_b, str out) {
 	try {
 		Editor editor = fs.open(str_a);
@@ -62,13 +66,15 @@ using pfunc = bool(*)(FileSystem&, cstr, cstr, str);
 class Menu
 {
 private:
-	std::map<std::string, std::pair<int, pfunc>> Commands = { {"pwd", {0, pwd}}, {"cd", {1, cd}}, {"mkdir", {1, mkdir}}, {"ls", {1, list}}, {"touch", {1, touch}}, {"rm", {1, rm}}, {"mv", {2, mv}},  {"open", {1, open}} };
+	std::map<std::string, std::pair<int, pfunc>> Commands = { {"pwd", {0, pwd}}, {"cd", {1, cd}}, {"mkdir", {1, mkdir}}, {"ls", {1, list}}, {"touch", {1, touch}}, {"rm", {1, rm}}, {"mv", {2, mv}},  {"open", {1, open}}, {"useradd", {1, useradd}} };
+	std::map<std::string, std::list<std::string>> Aliases;
 public:
 	bool isExist(); // 0 if eof, 1 if exist, 2 if doesn't
 	std::string getDiskName();
 	bool checkParam(const std::string& diskName, bool isExist);
 	std::string login();
 	std::string execute(FileSystem& fs, const std::string& unpreparedString);
+	void makeAlias(std::stringstream& args);
 };
 
 

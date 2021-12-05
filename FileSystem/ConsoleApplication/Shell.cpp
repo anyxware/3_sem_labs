@@ -122,6 +122,9 @@ int main()
 			diskName = MyText.substr(17, MyText.size() - 17);
 			break;
 		}
+		else if (currentToken >= 128 || currentToken < 32) {
+			continue;
+		}
 		else {
 			MyText += currentToken;
 		}
@@ -173,6 +176,9 @@ int main()
 		else if (currentToken == 13) {
 			userName = MyText.substr(17, MyText.size() - 17);
 			break;
+		}
+		else if (currentToken >= 128 || currentToken < 32) {
+			continue;
 		}
 		else {
 			MyText += currentToken;
@@ -236,6 +242,9 @@ int main()
 			remove_extra_lines(MyText);
 			startPos = MyText.size();
 		}
+		else if (currentToken >= 128 || currentToken < 32) {
+			continue;
+		}
 		else {
 			MyText += currentToken;
 		}
@@ -251,6 +260,8 @@ int main()
 
 	return 0;
 }
+
+
 
 //if (event.text.unicode < 128)
 			//std::cout << "ASCII character typed: " << (int)static_cast<char>(event.text.unicode) << " " << static_cast<char>(event.text.unicode) << std::endl;

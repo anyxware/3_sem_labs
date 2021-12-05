@@ -69,13 +69,38 @@ std::string Menu::execute(FileSystem& fs, const std::string& unpreparedString)
 
 	stream >> command;
 
+	if (command == "makeAlias") {
+		makeAlias(stream);
+		return out;
+	}
+
 	try {
 		Commands.at(command);
 	}
 	catch (std::exception& e) {
-		std::cout << command << ": No such command\n";
-		out = command + ": No such command\n";
-		return out;
+		try {
+			Aliases.at(command);
+			for (auto sub_command : Aliases[command]) {
+				if (Commands[sub_command].first == 0) {
+					out += execute(fs, sub_command);
+				}
+				else if (Commands[sub_command].first == 1) {
+					stream >> arg1;
+					out += execute(fs, sub_command + " " + arg1);
+				}
+				else if (Commands[sub_command].first == 2) {
+					stream >> arg1;
+					stream >> arg2;
+					out += execute(fs, sub_command + " " + arg1 + " " + arg2);
+				}
+			}
+			return out;
+		}
+		catch (std::exception q) {
+			std::cout << command << ": No such command\n";
+			out = command + ": No such command\n";
+			return out;
+		}
 	}
 
 	if (stream.eof() && command == "ls") arg1 = ".";
@@ -101,20 +126,35 @@ std::string Menu::execute(FileSystem& fs, const std::string& unpreparedString)
 	return out;
 }
 
-/*
-if (MessageBox(0,"Вы желаете завершить приложение?","Информация",MB_YESNO|MB_ICONQUESTION) == IDOK)
+#include <list>
+
+void Menu::makeAlias(std::stringstream& args)
 {
-   // нажали Yes
+	std::string command;
+	args >> command;
+	std::list<std::string> Args;
+
+	while (!args.eof()) {
+		std::string sub_command;
+		args >> sub_command;
+		std::cout << sub_command << "\n";
+		try {
+			Commands.at(sub_command);
+		}
+		catch (std::exception e) {
+			return;
+		}
+		Args.push_back(sub_command);
+	}
+
+	Aliases.insert({ command, Args });
 }
-else
-   // нажали No
-*/
+
 #include <Windows.h>
 
 #include <chrono>
 #include <thread>
 
-using namespace std::this_thread;     // sleep_for, sleep_until
 using namespace std::chrono_literals; // ns, us, ms, s, h, etc.
 using std::chrono::system_clock;
 
@@ -138,7 +178,7 @@ void moveLeft(Editor& editor, size_t& cursorPosition) {
 }
 
 void rmvCursor(Editor& editor, size_t& cursorPosition) {
-	editor.remove(cursorPosition - 1, 1);
+	editor.remove(cursorPosition, 1);
 }
 
 void TextEditor(Editor& editor)
@@ -155,10 +195,14 @@ void TextEditor(Editor& editor)
 	text.setFont(font); // font is a sf::Font
 	text.setCharacterSize(24); // in pixels, not points!
 	text.setFillColor(sf::Color::Cyan);
-	window.clear(Color(0, 0, 0, 0));
-	window.display();
 	size_t cursorPosition = 0;
 	addCursor(editor, cursorPosition);
+	text.setString(editor.show());
+	window.clear(Color(0, 0, 0, 0));
+	window.draw(text);
+	window.display();
+
+	bool saved = true;
 
 	while (1)
 	{
@@ -166,19 +210,18 @@ void TextEditor(Editor& editor)
 		while (window.pollEvent(event))
 		{
 			if (event.type == Event::Closed) {
-				if (MessageBox(0, L"Save file", L"Save", MB_YESNO | MB_ICONQUESTION) == IDOK)
+				if (!saved && MessageBox(0, L"Save file", L"Save", MB_YESNO | MB_ICONQUESTION) == IDOK)
 				{
-					//editor.save();
-					//rmvCursor(editor, cursorPosition);
+					rmvCursor(editor, cursorPosition);
+					editor.save();
 				}
 				window.close();
+				editor.close();
 				return;
 			}
 		}
 
-		
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) {
-			std::cout << "right\n";
 			if (cursorPosition < editor.show().size() - 1) {
 				editor.remove(cursorPosition, 1);
 				cursorPosition++;
@@ -188,7 +231,7 @@ void TextEditor(Editor& editor)
 				window.clear(Color(0, 0, 0, 0));
 				window.draw(text);
 				window.display();
-				sleep_for(delay);
+				std::this_thread::sleep_for(delay);
 			}
 
 		}
@@ -202,9 +245,21 @@ void TextEditor(Editor& editor)
 				window.clear(Color(0, 0, 0, 0));
 				window.draw(text);
 				window.display();
-				sleep_for(delay);
+				std::this_thread::sleep_for(delay);
 			}
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Delete)) {
+			if (cursorPosition < editor.show().size() - 1) {
+				editor.remove(cursorPosition + 1, 1);
 
+				text.setString(editor.show());
+				window.clear(Color(0, 0, 0, 0));
+				window.draw(text);
+				window.display();
+				std::this_thread::sleep_for(delay);
+
+				saved = false;
+			}
 		}
 		
 		if (event.type != sf::Event::TextEntered) {
@@ -214,28 +269,39 @@ void TextEditor(Editor& editor)
 		char currentToken = static_cast<char>(event.text.unicode);
 
 		if (currentToken >= 128 || currentToken < 32) {
-			//continue;
-		}
-
-		if (currentToken == 8) { // backspace
-			if (cursorPosition > 0) {
-				editor.remove(cursorPosition, 1);
-				cursorPosition--;
-				editor.remove(cursorPosition, 1);
-				editor.insert(cursorPosition, '|');
+			if (currentToken == 8) { // backspace
+				if (cursorPosition > 0) {
+					editor.remove(cursorPosition, 1);
+					cursorPosition--;
+					editor.remove(cursorPosition, 1);
+					editor.insert(cursorPosition, '|');
+					saved = false;
+				}
 			}
-		}
-		else if (currentToken == 13) { // \n
-			editor.remove(cursorPosition, 1);
-			editor.insert(cursorPosition, '\n');
-			cursorPosition++;
-			editor.insert(cursorPosition, '|');
+			else if (currentToken == 13) { // \n
+				editor.remove(cursorPosition, 1);
+				editor.insert(cursorPosition, '\n');
+				cursorPosition++;
+				editor.insert(cursorPosition, '|');
+				saved = false;
+			}
+			else if (currentToken == 19) { // ctrl s
+				rmvCursor(editor, cursorPosition);
+				editor.save();
+				addCursor(editor, cursorPosition);
+				saved = true;
+			}
+			else {
+				std::cout << (int)currentToken << "\n";
+				continue;
+			}
 		}
 		else {
 			editor.remove(cursorPosition, 1);
 			editor.insert(cursorPosition, currentToken);
 			cursorPosition++;
 			editor.insert(cursorPosition, '|');
+			saved = false;
 		}
 		
 		std::cout << (int)currentToken << "\n";
@@ -244,8 +310,6 @@ void TextEditor(Editor& editor)
 		window.clear(Color(0, 0, 0, 0));
 		window.draw(text);
 		window.display();
-		sleep_for(delay);
+		std::this_thread::sleep_for(delay);
 	}
-	
-	editor.close();
 }
