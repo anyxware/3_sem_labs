@@ -58,6 +58,16 @@ size_t INode::write(std::fstream& disk) {
 
 
 
+uid Entry::getCurrentUID()
+{
+	return fs.currentUID;
+}
+
+uid Entry::getOwnUID()
+{
+	return inode.UID;
+}
+
 size_t Entry::getMaxSize()
 {
 	return 7 * FileSystem::BLOCK_SZ + 2 * (FileSystem::BLOCK_SZ / sizeof(size_t)) * FileSystem::BLOCK_SZ;
@@ -443,6 +453,10 @@ void Editor::oldremove(size_t pos, size_t size)
 }
 
 void Editor::open() {
+	if (!(getCurrentUID() == getOwnUID())) {
+		return;
+	}
+
 	size_t fileAddress = getAddress();
 	size_t fileSize = getSize();
 	size_t inodeSize = getInodeSize();
@@ -461,7 +475,6 @@ void Editor::open() {
 void Editor::insert(size_t pos, const std::string& data)
 {
 	Mytext.insert(pos, data);
-	deltaSize += data.size();
 }
 
 void Editor::insert(size_t pos, char token)
